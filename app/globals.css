@@ -1,8 +1,23 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+@property --flash {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  --tile-top: #ffffff;
+  --tile-base: #e9ebee;
+  --tile-shadow: 15 23 42;
+  --tile-shadow-strength: 0.18;
+  --tile-accent: 121 204 100;
+  --tile-accent-dark: #457739;
 }
 
 @theme inline {
@@ -12,15 +27,234 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+
+  --tile-top: #3a3d41;
+  --tile-base: #2f3134;
+  --tile-shadow: 0 0 0;
+  --tile-shadow-strength: 0.45;
+  --tile-accent: 121 204 100;
+  --tile-accent-dark: #457739;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* game cell */
+.tile {
+  --flash: 0;
+  border-radius: 14px;
+  position: relative;
+  will-change: transform, box-shadow;
+  box-shadow:
+    0 8px 18px rgb(var(--tile-shadow) / var(--tile-shadow-strength)),
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    inset 0 -6px 14px rgb(0 0 0 / 0.2);
+  background: linear-gradient(
+    to bottom,
+    color-mix(
+      in oklab,
+      var(--tile-top) calc(100% - (var(--flash) * 100%)),
+      rgb(var(--tile-accent)) calc(var(--flash) * 100%)
+    ),
+    color-mix(
+      in oklab,
+      var(--tile-base) calc(100% - (var(--flash) * 100%)),
+      rgb(var(--tile-accent)) calc(var(--flash) * 100%)
+    )
+  );
+  transition: transform 0.12s ease-out;
+}
+
+.tile:not(:disabled):hover {
+  transform: scale(1.04);
+}
+
+.tile:not(:disabled):active {
+  transform: scale(0.96);
+}
+
+.tile:focus-visible {
+  outline: 2px solid var(--tile-accent-dark);
+  outline-offset: 3px;
+}
+
+.tile-pulse {
+  animation: tile-pulse 0.5s ease-out;
+}
+
+@keyframes tile-pulse {
+  0% {
+    --flash: 0.15;
+    transform: scale(1);
+  }
+  35% {
+    --flash: 0.45;
+    transform: scale(1.12, 0.9);
+    box-shadow:
+      0 10px 24px rgb(var(--tile-shadow) / var(--tile-shadow-strength)),
+      inset 0 1px 0 rgb(255 255 255 / 0.08),
+      inset 0 -6px 14px rgb(0 0 0 / 0.2),
+      0 0 22px rgb(var(--tile-accent) / 0.5);
+  }
+  65% {
+    transform: scale(0.94, 1.06);
+  }
+  100% {
+    --flash: 0;
+    transform: scale(1);
+    box-shadow:
+      0 8px 18px rgb(var(--tile-shadow) / var(--tile-shadow-strength)),
+      inset 0 1px 0 rgb(255 255 255 / 0.08),
+      inset 0 -6px 14px rgb(0 0 0 / 0.2);
+  }
+}
+
+/* BUTTON (reset)*/
+.btn-fill {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 999px;
+  padding: 0.6rem 1.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgb(var(--tile-accent));
+  background: linear-gradient(to bottom, var(--tile-top), var(--tile-base));
+  border: 1px solid rgb(var(--tile-accent) / 0.4);
+  box-shadow:
+    0 8px 18px rgb(var(--tile-shadow) / var(--tile-shadow-strength)),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
+  cursor: pointer;
+  transition:
+    color 0.4s ease,
+    box-shadow 0.3s ease,
+    transform 0.12s ease-out;
+}
+
+.btn-fill::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 0%;
+  background: linear-gradient(135deg, rgb(var(--tile-accent)), var(--tile-accent-dark));
+  transition: width 0.4s ease;
+}
+
+.btn-fill:hover::before {
+  width: 100%;
+}
+
+.btn-fill:hover {
+  color: #ffffff;
+  box-shadow:
+    0 10px 24px rgb(var(--tile-shadow) / var(--tile-shadow-strength)),
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 0 20px rgb(var(--tile-accent) / 0.35);
+}
+
+.btn-fill:active {
+  transform: scale(0.97);
+}
+
+.btn-fill.btn-highlight {
+  animation: btn-glow 3.6s ease-in-out infinite;
+}
+
+@keyframes btn-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 8px 18px rgb(var(--tile-shadow) / var(--tile-shadow-strength)),
+      inset 0 1px 0 rgb(255 255 255 / 0.08),
+      0 0 0 rgb(var(--tile-accent) / 0);
+  }
+  50% {
+    box-shadow:
+      0 8px 18px rgb(var(--tile-shadow) / var(--tile-shadow-strength)),
+      inset 0 1px 0 rgb(255 255 255 / 0.08),
+      0 0 22px rgb(var(--tile-accent) / 0.8);
+  }
+}
+
+/* WINNING LINE  */
+.winning-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  background: var(--foreground);
+  border-radius: 999px;
+  pointer-events: none;
+  animation: winning-line-in 0.3s ease-out;
+}
+
+/* ===== PAGE LAYOUT ===== */
+.game-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(
+      circle at 15% 20%,
+      rgb(var(--tile-accent) / 0.16),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 85% 85%,
+      rgb(var(--tile-accent) / 0.12),
+      transparent 45%
+    ),
+    var(--background);
+}
+
+.game-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.75rem;
+  padding: 2.5rem 3rem;
+  border-radius: 28px;
+  background: linear-gradient(to bottom, var(--tile-top), var(--tile-base));
+  box-shadow:
+    0 24px 60px rgb(var(--tile-shadow) / var(--tile-shadow-strength)),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+.game-title {
+  margin: 0;
+  font-family: var(--font-geist-mono);
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--foreground);
+  text-shadow: 0 0 28px rgb(var(--tile-accent) / 0.45);
+}
+
+.game-title em {
+  font-style: normal;
+  color: rgb(var(--tile-accent));
+}
+
+@keyframes winning-line-in {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
 }
