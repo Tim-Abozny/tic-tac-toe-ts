@@ -18,8 +18,8 @@ Play a local 3x3 Tic-Tac-Toe match against another player on the same device:
 Clone the repository and install dependencies:
 
 ```bash
-git clone <repository-url>
-cd tic-tac-toe
+git clone https://github.com/Tim-Abozny/tic-tac-toe-ts.git
+cd tic-tac-toe-ts
 npm install
 ```
 
